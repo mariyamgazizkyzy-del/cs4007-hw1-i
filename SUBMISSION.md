@@ -136,61 +136,59 @@ say so here.** Exact match is not correctness.
 
 **`cl100k_base`:**
 
+# Sublab Harder — open the tokenizer
+
+### A. What a language costs
+
+**`cl100k_base`:**
+
 | Language | Tokens | Chars | Tok/char | × English | $ per 1,000 sentences |
 |---|---|---|---|---|---|
-| kk | | | | | |
-| ru | | | | | |
-| en | | | | 1.00 | |
+| kk | 200 | 263 | 0.760 | 3.75 | $1.00 |
+| ru | 129 | 277 | 0.466 | 2.30 | $0.65 |
+| en | 59 | 291 | 0.203 | 1.00 | $0.30 |
 
 **`o200k_base`:**
 
 | Language | Tokens | Chars | Tok/char | × English | $ per 1,000 sentences |
 |---|---|---|---|---|---|
-| kk | | | | | |
-| ru | | | | | |
-| en | | | | 1.00 | |
+| kk | 104 | 263 | 0.395 | 1.95 | $0.52 |
+| ru | 91 | 277 | 0.329 | 1.62 | $0.46 |
+| en | 59 | 291 | 0.203 | 1.00 | $0.30 |
+
+---
 
 ### B. What a homoglyph does
 
-One row per `latin_homoglyph` sentence in the dataset. Paste the actual decoded
-token strings around the divergence point, not a description of them.
-
 | Sentence id | Foreign char (index, name) | Tokens correct | Tokens corrupted | Δ | Diverges at |
 |---|---|---|---|---|---|
-| | | | | | |
-| | | | | | |
+| s01 | char 14 is 'a' - LATIN SMALL LETTER A | 12 | 14 | +2 | index 2 |
+| s05 | char 22 is 'e' - LATIN SMALL LETTER E | 11 | 13 | +2 | index 3 |
 
 **Token pieces around the divergence:**
-
-```
-correct  :
-corrupted:
-```
+correct  : [' ба', 'сқа', 'рма', 'сы', 'на']
+corrupted: [' б', 'a', 'сқ', 'ар', 'ма']
+### Written answers
+---
 
 ### C. Did it get better?
 
 | Language | cl100k_base | o200k_base | Change |
 |---|---|---|---|
-| kk | | | |
-| ru | | | |
-| en | | | |
+| kk | 0.760 | 0.395 | -48.0% |
+| ru | 0.466 | 0.329 | -29.4% |
+| en | 0.203 | 0.203 | 0.0% |
+
+---
 
 ### Written answers
 
-**1. What is the Kazakh tax?** The ratio against English in both encodings, the
-dollar figure from A, and how much it changed between the two tokenizers.
+**1. What is the Kazakh tax?**
+> The "Kazakh tax" refers to the heavy tokenization premium incurred when processing Kazakh text compared to English. Under the older `cl100k_base` tokenizer, Kazakh cost **3.75x more per character** than English (0.760 vs 0.203 tok/char, or $1.00 per 1,000 sentences). The newer `o200k_base` tokenizer significantly narrowed this gap, reducing the multiplier to **1.95x English** (0.395 tok/char, dropping the cost to $0.52). While the cost was effectively cut in half (-48%), Kazakh still carries nearly double the token overhead of English.
 
->
+**2. Why did the models repair `kaz_to_rus` but struggle with `latin_homoglyph`?**
+> A `kaz_to_rus` error replaces one Cyrillic character with another, which generally preserves the overall word boundary and token structure. In contrast, a `latin_homoglyph` introduces a Latin script character into the middle of a Cyrillic word. As shown in part B, this causes the tokenizer to shatter the word into unnatural sub-word fragments (e.g., changing `[' ба', 'сқа', 'рма']` into `[' б', 'a', 'сқ', 'ар', 'ма']`). Instead of receiving a recognizable word with a single typo, the model receives fragmented bytes and unrelated sub-tokens, making context restoration substantially harder.
 
-**2. Why did the models repair `kaz_to_rus` but struggle with
-`latin_homoglyph`?** Both are single-letter substitutions and both look almost
-identical on screen. Use your token streams from B as the evidence. Say what the
-model actually received in each case.
-
->
-
-**3. Name one thing this measurement does not explain about your Sublab Medium
-results.** You measured OpenAI's tokenizers; three of your six models were not
-OpenAI's. What follows, and what would you have to do to close the gap?
-
+**3. Name one thing this measurement does not explain about your Sublab Medium results.**
+> This experiment exclusively measures OpenAI's tokenizers (`cl100k_base` and `o200k_base`), whereas the Sublab Medium models included non-OpenAI architectures like Meta's Llama 3.1 and Alibaba's Qwen 2.5. Each model family utilizes its own distinct vocabulary size, merge rules, and byte-pair encoding (BPE) implementation. To close this gap and properly evaluate performance across non-OpenAI models, we would need to inspect their respective open-source tokenizers (e.g., using Hugging Face `transformers` / `AutoTokenizer`) directly.
 >

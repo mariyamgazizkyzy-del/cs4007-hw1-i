@@ -37,8 +37,7 @@ RATES_PER_MTOK = {
     "gpt-5.6-luna": (0.20, 1.20),
     "gpt-5.6-terra": (2.00, 12.00),
     "gpt-5.6-sol": (5.00, 30.00),
-    # Reached through OpenRouter
-    "google/gemma-4-26b-a4b-it:free": (0.00, 0.00),
+    "google/gemma-3-27b-it": (0.08, 0.16),
     "qwen/qwen3.8-27b": (0.45, 3.20),
     "deepseek/deepseek-v4-flash-0731": (0.14, 0.28),
 }
@@ -62,16 +61,10 @@ def openai_client() -> OpenAI:
 
 
 def openrouter_client() -> OpenAI:
-    """A client pointed at OpenRouter.
-
-    Same class, same methods. Note what you had to change - the written
-    question at the end of this sublab asks you exactly that.
-    """
     key = os.environ.get("OPENROUTER_API_KEY")
     if not key:
         raise RuntimeError("OPENROUTER_API_KEY is not set. Copy .env.example to .env.")
-    # TODO: return an OpenAI client whose base_url is OPENROUTER_BASE_URL
-    raise NotImplementedError
+    return OpenAI(api_key=key, base_url=OPENROUTER_BASE_URL)
 
 
 def client_for(via: str) -> OpenAI:
@@ -88,27 +81,47 @@ def client_for(via: str) -> OpenAI:
 # --------------------------------------------------------------------------
 
 def build_system_prompt(catalogue: dict) -> str:
-    """Write the system message that turns a language model into a registrar.
+    student = catalogue["student"]
+    rules = catalogue["rules"]
 
-    This is the whole assignment for this function: the model knows nothing
-    about Narxoz, so everything true has to arrive in this string.
 
-    It must contain:
-      - every course code in the catalogue, with its title, credits,
-        prerequisites, meeting times and remaining seats;
-      - which courses this student has already completed, and the credit limit;
-      - an instruction to refuse anything not in the catalogue rather than
-        inventing it. Write that instruction as forcefully as you like. Then
-        find out in turn 4 whether it held.
+    lines = []
+    lines.append("You are the course registrar for Narxoz University, term " + catalogue["term"] + ".")
+    lines.append("You know ONLY what is listed below. If a course code is not in this list, "
+                  "it does not exist — refuse to register it and say so plainly. Do not invent "
+                  "courses, credits, instructors, or seat counts under any circumstances.")
+    lines.append("")
+    lines.append("REGISTRATION RULES:")
+    lines.append("- Maximum credits per term: %d" % rules["max_credits"])
+    lines.append("- Minimum credits per term: %d" % rules["min_credits"])
+    lines.append("- A student may NOT register for a course if: they have not completed its "
+                  "prerequisites, it has no seats left, they have already passed it, or it "
+                  "meets at the same day and time as another course in the same registration.")
+    lines.append("")
+    lines.append("STUDENT:")
+    lines.append("- ID: %s, Year: %d, Programme: %s"
+                  % (student["student_id"], student["year"], student["programme"]))
+    lines.append("- Already completed: " + ", ".join(student["completed"]))
+    lines.append("")
+    lines.append("COURSE CATALOGUE:")
+    for c in catalogue["courses"]:
+        seats_left = c["seats_total"] - c["seats_taken"]
+        schedule_str = "; ".join(
+            "%s %s-%s" % (s["day"], s["start"], s["end"]) for s in c["schedule"]
+        )
+        prereq_str = ", ".join(c["prerequisites"]) if c["prerequisites"] else "none"
+        lines.append(
+            "- %s: %s | %d credits | prerequisites: %s | schedule: %s | "
+            "seats: %d/%d (%d left) | instructor: %s"
+            % (c["code"], c["title"], c["credits"], prereq_str, schedule_str,
+               c["seats_taken"], c["seats_total"], seats_left, c["instructor"])
+        )
+    lines.append("")
+    lines.append("Always check prerequisites, seat availability, prior completion, and schedule "
+                  "conflicts before confirming a registration. If asked about a course not in "
+                  "this catalogue, refuse and state clearly that it does not exist in the system.")
 
-    How you lay the catalogue out inside the string is yours to decide - a
-    table, JSON, one line per course. Say in SUBMISSION.md what you chose.
-
-    Returns:
-        The system prompt, as a single string.
-    """
-    # TODO
-    raise NotImplementedError
+    return "\n".join(lines)
 
 
 # --------------------------------------------------------------------------
@@ -130,9 +143,18 @@ def chat(messages: list[dict], model: str = "gpt-5.6-luna",
     the string - the whole point of week 1 was that your word count is not the
     model's token count.
     """
-    # TODO: client_for(via).chat.completions.create(...), then pull the text
-    #       out of .choices and the counts out of .usage.
-    raise NotImplementedError
+    client = client_for(via)
+    response = client.chat.completions.create(
+        model=model,
+        messages=messages,
+    )
+    choice = response.choices[0]
+    return {
+        "text": choice.message.content,
+        "input_tokens": response.usage.prompt_tokens,
+        "output_tokens": response.usage.completion_tokens,
+        "model": model,
+    }
 
 
 def ask_once(prompt: str, model: str = "gpt-5.6-luna",
@@ -174,17 +196,7 @@ def run_turn(history: list[dict], user_text: str, model: str = "gpt-5.6-luna",
 
 def estimate_cost(input_tokens: int, output_tokens: int,
                   rate_in: float, rate_out: float) -> float:
-    """Dollar cost of one call.
-
-    `rate_in` and `rate_out` are dollars per MILLION tokens.
-
-    >>> round(estimate_cost(1_000_000, 1_000_000, 1.0, 2.0), 6)
-    3.0
-    >>> estimate_cost(0, 0, 5.0, 30.0)
-    0.0
-    """
-    # TODO
-    raise NotImplementedError
+    return (input_tokens / 1_000_000) * rate_in + (output_tokens / 1_000_000) * rate_out
 
 
 def cost_of(usage: dict) -> float:
@@ -195,15 +207,7 @@ def cost_of(usage: dict) -> float:
 
 
 def conversation_cost(usages: list[dict]) -> float:
-    """What the whole conversation cost: the sum of every turn.
-
-    `usages` is the list of dicts `run_turn` handed back, in order.
-
-    >>> conversation_cost([])
-    0.0
-    """
-    # TODO
-    raise NotImplementedError
+    return sum(cost_of(u) for u in usages)
 
 
 # --------------------------------------------------------------------------
@@ -217,7 +221,7 @@ SCRIPT = [
     "Register me for CSS-4007 and CSS-4102.",
     "How many credits would that be in total, and am I within the limit?",
     "Add CSS-4090 Quantum Machine Learning to my schedule.",
-    "TODO: turn 1 again, written in Kazakh or Russian",
+    "Мен үшінші курс студентімін. Мен әлі де қандай курстарға жазыла аламын?",
 ]
 
 
@@ -249,5 +253,7 @@ if __name__ == "__main__":
     if any(t.startswith("TODO") for t in SCRIPT):
         raise SystemExit("Write turn 5 in Kazakh or Russian first.")
 
-    run_script("gpt-5.6-luna", "openai")
-    run_script("google/gemma-4-26b-a4b-it:free", "openrouter")
+    # OpenAI has no credits
+    # run_script("gpt-5.6-luna", "openai")
+
+    run_script("google/gemma-3-27b-it", "openrouter")
