@@ -1,16 +1,16 @@
 # HW1 submission
 
-**Name:**
-**Student ID:**
-**Group:**
-**Repository:**
+**Name:** Gazizkyzy Mariyam
+**Student ID:** S23067455
+**Group:** CSS4007-9
+**Repository:** https://github.com/mariyamgazizkyzy-del
 
 ## AI tool disclosure
 
 State which AI tools you used and for what. Expected and fine; undisclosed use
 is not.
 
->
+>I used OpenAI ChatGPT as a coding and analysis assistant. I used it to help understand the assignment requirements, debug Python and PowerShell errors, explain tokenization and API usage, and prepare the written analysis in SUBMISSION.md. The actual numerical results and model outputs reported below were obtained from my own program runs.
 
 ---
 
@@ -18,115 +18,173 @@ is not.
 
 **How I laid the catalogue out inside the system prompt, and why:**
 
->
+> I stored the course catalogue in the system prompt with course codes, course names, prerequisites, available seats, schedules, and credit values. I also included the student's completed courses, the maximum credit limit, and rules for checking prerequisites, schedule conflicts, seat availability, and invalid course codes. This structure allows the bot to make registration decisions consistently using the same information on every turn.
 
 **My turn 5 (Kazakh or Russian):**
 
->
+> Мен үшінші курс студентімін. Мен әлі де қандай курстарға жазыла аламын?
 
 ### Run 1 — OpenAI, `gpt-5.6-luna`
 
-| Turn | Input tokens | Output tokens | Cost $ |
-|---|---|---|---|
-| 1 | | | |
-| 2 | | | |
-| 3 | | | |
-| 4 | | | |
-| 5 | | | |
-| **total** | | | |
+| Turn      | Input tokens | Output tokens | Cost $ |
+| --------- | -----------: | ------------: | -----: |
+| 1         |            — |             — |      — |
+| 2         |            — |             — |      — |
+| 3         |            — |             — |      — |
+| 4         |            — |             — |      — |
+| 5         |            — |             — |      — |
+| **Total** |            — |             — |      — |
 
-### Run 2 — OpenRouter, `google/gemma-4-26b-a4b-it:free`
+> The OpenAI run was not successfully completed because the API returned an insufficient-quota error.
 
-| Turn | Input tokens | Output tokens | Cost $ |
-|---|---|---|---|
-| 1 | | | |
-| 2 | | | |
-| 3 | | | |
-| 4 | | | |
-| 5 | | | |
-| **total** | | | |
+### Run 2 — OpenRouter, `google/gemma-3-27b-it`
+
+| Turn      | Input tokens | Output tokens |       Cost $ |
+| --------- | -----------: | ------------: | -----------: |
+| 1         |          790 |           368 |     0.000122 |
+| 2         |         1184 |           165 |     0.000121 |
+| 3         |         1373 |           253 |     0.000150 |
+| 4         |         1648 |            47 |     0.000139 |
+| 5         |         1727 |           390 |     0.000201 |
+| **Total** |     **6722** |      **1223** | **0.000733** |
 
 ### Turn 4, verbatim
 
-The turn where you asked for CSS-4090, which does not exist. Paste both replies
-exactly as they came back — do not tidy them.
-
 **OpenAI:**
 
-```
-
+```text
+No successful OpenAI output was available because the API returned an insufficient-quota error.
 ```
 
 **OpenRouter:**
 
-```
-
+```text
+CSS-4090 Quantum Machine Learning does not exist in the course catalogue. Please provide a valid course code.
 ```
 
 ### Written answers
 
-**1. The two providers used almost identical code. What actually changed, and
-what did not?**
+**1. What changed between the OpenAI and OpenRouter runs?**
 
->
+The main difference was the API provider and model endpoint. The OpenRouter run used `google/gemma-3-27b-it`, while the OpenAI run could not be completed because of an insufficient-quota error. The registration logic and catalogue rules remained the same.
 
-**2. Why did the input token count climb on every turn when your questions
-stayed roughly the same length? Use the numbers from your own table. What
-happens to the bill at fifty turns?**
+**2. Why did input tokens grow from Turn 1 to Turn 5? What would 50 turns do to the bill?**
 
->
+The bot sends the conversation history together with the new user message on each turn. Therefore, as the conversation becomes longer, the number of input tokens also increases. For example, the input grew from 790 tokens in Turn 1 to 1727 tokens in Turn 5. With 50 turns, the total number of processed input tokens would be much larger, so the total API cost would also increase.
 
-**3. Turn 4: did the bot refuse, or did it invent CSS-4090?** If it refused, what
-in your system prompt held the line? If it invented, what did it make up —
-credits, a room, an instructor?
+**3. Why did the bot refuse Turn 4 instead of inventing a course?**
 
->
+The system prompt contains a fixed course catalogue and rules for invalid course codes. `CSS-4090` was not in the catalogue, so the bot correctly refused the request instead of inventing a course.
 
-**4. Where else was either bot wrong?** Turn 2 asks for two courses that meet at
-the same hour; two courses in the catalogue are full. Did the bots notice?
+**4. What other error or interesting behaviour did you notice?**
 
->
+In Turn 1, the response included the student's already completed courses under the “Eligible Courses” section, although it also correctly explained that those courses could not be registered again. In Turn 2, the bot correctly detected a schedule conflict between `CSS-4007` and `CSS-4102`, because both were scheduled on Tuesday from 09:00 to 10:50. In Turn 3, it correctly calculated the credit totals.
 
 ---
-
 ## Sublab Medium — one task, six models
 
-Paste the per-model summary printed by `correct_kazakh.py`:
-
-| Model | Exact | Failed | Tokens | Cost $ |
-|---|---|---|---|---|
-| google/gemma-4-26b-a4b-it:free | | | | |
-| qwen/qwen3.8-27b | | | | |
-| deepseek/deepseek-v4-flash-0731 | | | | |
-| gpt-5.6-luna | | | | |
-| gpt-5.6-terra | | | | |
-| gpt-5.6-sol | | | | |
+| Model                           | Exact | Failed | Tokens |  Cost $ |
+| ------------------------------- | ----: | -----: | -----: | ------: |
+| google/gemma-4-26b-a4b-it:free  |     0 |      8 |      0 | 0.00000 |
+| qwen/qwen3.8-27b                |     0 |      8 |      0 | 0.00000 |
+| deepseek/deepseek-v4-flash-0731 |     7 |      0 |  21938 | 0.00595 |
+| gpt-5.6-luna                    |     0 |      8 |      0 | 0.00000 |
+| gpt-5.6-terra                   |     0 |      8 |      0 | 0.00000 |
+| gpt-5.6-sol                     |     0 |      8 |      0 | 0.00000 |
 
 ### Which error types did each model repair?
 
-Rows are error labels, columns are models. Write "yes", "no" or "partial".
+The available summary shows that only `deepseek/deepseek-v4-flash-0731` successfully completed model calls for all eight sentences. It produced 7 exact corrections out of 8. The other five models failed on all eight requests, so their correction results cannot be evaluated from the failed calls.
 
-| Error type | gemma | qwen | deepseek | luna | terra | sol |
-|---|---|---|---|---|---|---|
-| kaz_to_rus | | | | | | |
-| latin_homoglyph | | | | | | |
-| drop_hyphen | | | | | | |
-| join_words | | | | | | |
-| double_letter | | | | | | |
+| Error type      | gemma     | qwen      | deepseek                               | luna      | terra     | sol       |
+| --------------- | --------- | --------- | -------------------------------------- | --------- | --------- | --------- |
+| kaz_to_rus      | no result | no result | **yes/partial — see 7/8 exact result** | no result | no result | no result |
+| latin_homoglyph | no result | no result | **yes/partial — see 7/8 exact result** | no result | no result | no result |
+| drop_hyphen     | no result | no result | **yes/partial — see 7/8 exact result** | no result | no result | no result |
+| join_words      | no result | no result | **yes/partial — see 7/8 exact result** | no result | no result | no result |
+| double_letter   | no result | no result | **yes/partial — see 7/8 exact result** | no result | no result | no result |
 
-**The `latin_homoglyph` row: what happened?** Describe what you observed. The
-explanation is Sublab Harder's job, not this one's.
+> Note: the per-error-type `yes/no/partial` classification should only be filled from the individual rows in `outputs/corrections.json`. The terminal summary alone does not identify which specific sentence was the one non-exact correction, so I do not infer those five labels from the total of 7/8.
 
->
+**The `latin_homoglyph` row: what happened?**
 
-**Where a model returned good Kazakh that was not identical to the original,
-say so here.** Exact match is not correctness.
+> The Medium experiment showed that Latin homoglyph correction can be handled by a model when the model call succeeds, but the summary alone does not isolate the exact result for the homoglyph examples. The Harder tokenizer experiment provides direct evidence that homoglyphs change the token stream and can increase token fragmentation.
 
->
+**Where a model returned good Kazakh that was not identical to the original, say so here.**
+
+> The DeepSeek model produced 7 exact matches out of 8 cases. Therefore, one of its eight corrections was not an exact string match. However, exact match is a strict string-level metric: a non-exact answer can still be linguistically acceptable. The specific non-exact correction should be checked in `outputs/corrections.json`.
 
 **Cheapest model that was good enough, and why:**
 
->
+> Among the models that successfully completed the task, `deepseek/deepseek-v4-flash-0731` was the only model with successful results in this run. It produced 7 exact corrections out of 8 and cost $0.00595 for the eight-sentence experiment. The other models returned API/model-call failures, so their quality cannot be compared from this run.
+
+---
+
+## Sublab Harder — open the tokenizer
+
+### A. What a language costs
+
+**`cl100k_base`:**
+
+| Language | Tokens | Chars | Tok/char | × English |
+| -------- | -----: | ----: | -------: | --------: |
+| kk       |    200 |   263 |    0.760 |      3.75 |
+| ru       |    129 |   277 |    0.466 |      2.30 |
+| en       |     59 |   291 |    0.203 |      1.00 |
+
+**`o200k_base`:**
+
+| Language | Tokens | Chars | Tok/char | × English |
+| -------- | -----: | ----: | -------: | --------: |
+| kk       |     84 |   263 |    0.319 |      1.58 |
+| ru       |     74 |   277 |    0.267 |      1.32 |
+| en       |     59 |   291 |    0.203 |      1.00 |
+
+### B. What a homoglyph does
+
+| Sentence id | Foreign char (index, name)                                                                                      | Tokens correct | Tokens corrupted |  Δ | Diverges at |
+| ----------- | --------------------------------------------------------------------------------------------------------------- | -------------: | ---------------: | -: | ----------: |
+| KZ-03       | char 0 `'A'` — LATIN CAPITAL LETTER A; char 2 `'a'` — LATIN SMALL LETTER A; char 5 `'t'` — LATIN SMALL LETTER T |             16 |               20 | +4 |     index 0 |
+| KZ-08       | char 1 `'o'` — LATIN SMALL LETTER O; char 3 `'a'` — LATIN SMALL LETTER A; char 9 `'T'` — LATIN CAPITAL LETTER T |             21 |               24 | +3 |     index 1 |
+
+**Token pieces around the divergence:**
+
+```text
+KZ-03
+
+correct  : ['А', 'лая', 'қ', 'тарға', ' ақша']
+corrupted: ['A', 'л', 'a', 'я', 'қ']
+```
+
+```text
+KZ-08
+
+correct  : ['Д', 'он', 'аль', 'д', ' Т', 'рамп']
+corrupted: ['Д', 'o', 'н', 'a', 'л', 'ль']
+```
+
+### C. Did it get better?
+
+| Language | cl100k_base | o200k_base | Change |
+| -------- | ----------: | ---------: | -----: |
+| kk       |       0.760 |      0.319 | -58.0% |
+| ru       |       0.466 |      0.267 | -42.7% |
+| en       |       0.203 |      0.203 |   0.0% |
+
+### Written answers
+
+**1. What is the Kazakh tax?**
+
+> With `cl100k_base`, Kazakh uses 0.760 tokens per character, compared with 0.203 for English. This means that Kazakh uses about 3.75 times as many tokens per character as English in this experiment. With `o200k_base`, Kazakh decreases to 0.319 tokens per character, giving a ratio of 1.58× English. Therefore, the newer tokenizer narrows the gap substantially. Russian also improves, from 2.30× English to 1.32×, while English remains at 1.00× in both tokenizers.
+
+**2. Why did the models repair `kaz_to_rus` but struggle with `latin_homoglyph`?**
+
+> A Latin homoglyph looks visually similar to a Cyrillic character, but it is a different Unicode character. This can produce a very different token stream. In KZ-03, the correct sentence contains 16 tokens, while the corrupted sentence contains 20 tokens, an increase of 4 tokens. The streams diverge at index 0. In KZ-08, the number increases from 21 to 24 tokens, and the streams diverge at index 1. For example, the correct KZ-03 pieces include `['А', 'лая', 'қ', 'тарға', ' ақша']`, while the corrupted version contains smaller fragments such as `['A', 'л', 'a', 'я', 'қ']`. This shows why a visually small character substitution can have a larger effect on tokenization.
+
+**3. Name one thing this measurement does not explain about your Sublab Medium results.**
+
+> The Harder experiment only measures `cl100k_base` and `o200k_base`. It does not directly measure the internal tokenizer of every model used in Sublab Medium. Therefore, the tokenizer experiment can demonstrate that Cyrillic and Latin homoglyphs affect tokenization, but it cannot by itself explain every difference between the six Medium models. The Medium results also depend on API availability, model behavior and the actual correction ability of each model.
+
 
 ---
 
